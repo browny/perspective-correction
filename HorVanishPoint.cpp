@@ -1,7 +1,7 @@
 
 #include <math.h>
 #include <vector>
-#include "HorVanishPoint.h"
+#include "horVanishPoint.h"
 
 using namespace std;
 

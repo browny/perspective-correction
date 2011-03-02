@@ -1,0 +1,7 @@
+.project
+.cproject
+.settings
+*.o
+*.jpg
+!test.JPG
+Debug/

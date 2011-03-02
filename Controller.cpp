@@ -1,55 +1,53 @@
 
-#include "Controller.h"
-#include "Homography.h"
-#include "TextLocation.h"
-#include "HorVanishPoint.h"
+#include "controller.h"
+#include "homography.h"
+#include "textLocation.h"
+#include "horVanishPoint.h"
 
-Controller::Controller(const IplImage* img) {
+Controller::Controller(const IplImage* img, string winName) :
+	UIWindow(winName, cvGetSize(img)) {
 
-	ctrlPtIdx = -1;
+	m_ctrlPtIdx = -1;
 
-	src       = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
-	srcBackup = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
-	out       = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
-	cvCopy(img, src);
-	cvCopy(img, srcBackup);
+	m_src = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
+	m_srcBackup = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
+	m_out = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
+	cvCopy(img, m_src);
+	cvCopy(img, m_srcBackup);
 
-	initCorners(cvGetSize(src));
-
-	cvNamedWindow("Win", 1);
-	cvSetMouseCallback("Win", &Controller::onMouse, this);
+	initCorners(cvGetSize(m_src));
 
 }
 
 void Controller::run() {
 
-	TextLocation txt(src);
-	txt.threshold(txt.gray, txt.th);
-	txt.boundBox(txt.th, txt.boundBoxRect, txt.boundBoxCenter);
+	TextLocation txtLocation(m_src);
+	txtLocation.threshold(txtLocation.grayImg, txtLocation.thImg);
+	txtLocation.boundBox(txtLocation.thImg, txtLocation.boundBoxRect, txtLocation.boundBoxCenter);
 
-	drawCorners(src);
+	drawCorners(m_src);
+
 	Homography homo;
-
 	// Event loops
 	while (1) {
 
-		cvShowImage("Win", src);
+		cvShowImage("Win", m_src);
 
 		// Keyboard event
 		int c = cvWaitKey(30);
 
 		if (c == 'h' || c == 'H') {
 
-			homo.getHomoMat(corners, src->width, src->height);
-			homo.perspectiveCorrect(src, out);
-			cvShowImage("H", out);
+			homo.getHomoMat(m_cornerList, m_src->width, m_src->height);
+			homo.perspectiveCorrect(m_src, m_out);
+			cvShowImage("H", m_out);
 
 		}
 
 		if ((char) c == 27) { // 'Esc' to terminate
 
 			cvDestroyAllWindows();
-			cvReleaseImage(&out);
+			cvReleaseImage(&m_out);
 			exit(1);
 
 			break;
@@ -61,12 +59,12 @@ void Controller::run() {
 
 void Controller::initCorners(CvSize sz) {
 
-	corners.resize(4);
-	int width  = src->width;
-	int height = src->height;
+	m_cornerList.resize(4);
+	int width  = m_src->width;
+	int height = m_src->height;
 
-	vector<CvPoint>::iterator it = corners.begin();
-	while (it != corners.end()) {
+	vector<CvPoint>::iterator it = m_cornerList.begin();
+	while (it != m_cornerList.end()) {
 
 		it->x = width / 10;
 		it->y = height / 10;
@@ -90,8 +88,8 @@ void Controller::initCorners(CvSize sz) {
 
 void Controller::drawCorners(IplImage* img) {
 
-	vector<CvPoint>::iterator it = corners.begin();
-	while (it != corners.end()) {
+	vector<CvPoint>::iterator it = m_cornerList.begin();
+	while (it != m_cornerList.end()) {
 		cvCircle(img, *it, 5, CV_RGB(255, 0, 0), -2, CV_AA, 0);
 		it++;
 	}
@@ -103,8 +101,8 @@ int Controller::getNearestPointIndex(CvPoint mousePt) {
 	CvPoint pt;
 	for (int i = 0; i < 4; i++) {
 
-		pt.x = mousePt.x - (int) corners[i].x;
-		pt.y = mousePt.y - (int) corners[i].y;
+		pt.x = mousePt.x - (int) m_cornerList[i].x;
+		pt.y = mousePt.y - (int) m_cornerList[i].y;
 		float distance = sqrt((float) (pt.x * pt.x + pt.y * pt.y));
 		if (distance < 20)
 			return i;
@@ -115,32 +113,30 @@ int Controller::getNearestPointIndex(CvPoint mousePt) {
 
 void Controller::onMouse(int event, int x, int y, int flags, void *param) {
 
-	// 圖片超過螢幕大小，控制會出錯
-
-	Controller* temp= (Controller*) param;
+	Controller* pController = (Controller*) param;
 	CvPoint pt = cvPoint(x, y);
 
 	switch (event) {
 
 		case CV_EVENT_LBUTTONDOWN:
 
-		if (temp->ctrlPtIdx > -1) {
-			temp->ctrlPtIdx = -1;
+		if (pController->m_ctrlPtIdx > -1) {
+			pController->m_ctrlPtIdx = -1;
 		} else {
-			temp->ctrlPtIdx = temp->getNearestPointIndex(pt);
+			pController->m_ctrlPtIdx = pController->getNearestPointIndex(pt);
 		}
 
 		break;
 
 		case CV_EVENT_MOUSEMOVE:
 
-		if (temp->ctrlPtIdx > -1) {
+		if (pController->m_ctrlPtIdx > -1) {
 
-			temp->corners[temp->ctrlPtIdx].x = x;
-			temp->corners[temp->ctrlPtIdx].y = y;
+			pController->m_cornerList[pController->m_ctrlPtIdx].x = x;
+			pController->m_cornerList[pController->m_ctrlPtIdx].y = y;
 
-			cvCopy(temp->srcBackup, temp->src);
-			temp->drawCorners(temp->src);
+			cvCopy(pController->m_srcBackup, pController->m_src);
+			pController->drawCorners(pController->m_src);
 
 		}
 
@@ -152,11 +148,25 @@ void Controller::onMouse(int event, int x, int y, int flags, void *param) {
 
 }
 
+void Controller::setupCallbacks() {
+
+	cvSetMouseCallback(cvGetWindowName(m_window), &Controller::onMouse, this);
+
+}
+
+void Controller::onMouseCallback(int event, int x, int y) {
+
+}
+
+void Controller::onKeyCallback(int keyCode) {
+
+}
+
 
 Controller::~Controller() {
 
-	cvReleaseImage(&src);
-	cvReleaseImage(&srcBackup);
-	cvReleaseImage(&out);
+	cvReleaseImage(&m_src);
+	cvReleaseImage(&m_srcBackup);
+	cvReleaseImage(&m_out);
 
 }

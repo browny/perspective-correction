@@ -6,13 +6,20 @@
 #include <cxcore.h>
 #include <highgui.h>
 #include <vector>
+#include <string>
+#include "uiWindow.h"
 
 using namespace std;
 
-class Controller {
+class Controller : public UIWindow {
 public:
 
-	Controller(const IplImage* img);
+	Controller(const IplImage* img, string winName);
+
+	// Virtual function implementation
+	void setupCallbacks();
+	void onMouseCallback(int event, int x, int y);
+	void onKeyCallback(int keyCode);
 
 	void run();
 
@@ -20,12 +27,12 @@ public:
 
 private:
 
-	int ctrlPtIdx;
-	vector<CvPoint> corners;
+	int m_ctrlPtIdx;
+	vector<CvPoint> m_cornerList;
 
-	IplImage* src;
-	IplImage* srcBackup;
-	IplImage* out;
+	IplImage* m_src;
+	IplImage* m_srcBackup;
+	IplImage* m_out;
 
 	void initCorners(CvSize sz); // initilaize 4 corners
 	void drawCorners(IplImage* img);

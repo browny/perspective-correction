@@ -19,8 +19,8 @@ public:
 
 private:
 
-	Mat homoMat; // homography matrix
+	Mat m_homoMat; // homography matrix
 
 };
 
-#endif /* _HOMOGRAPHY_H_ */
+#endif
