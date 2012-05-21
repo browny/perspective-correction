@@ -3,5 +3,5 @@
 .settings
 *.o
 *.jpg
-!test.JPG
+!test.jpg
 Debug/
