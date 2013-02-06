@@ -10,7 +10,7 @@
 
 #####Mac#####
 
-	[Installing the OpenCV library on Mac OS X Lion using Homebrew](http://craiccomputing.blogspot.tw/2012/08/installing-opencv-library-on-mac-os-x.html)
+   [Installing the OpenCV library on Mac OS X Lion using Homebrew](http://craiccomputing.blogspot.tw/2012/08/installing-opencv-library-on-mac-os-x.html)
 
 ####2. Prepare the CMake build environment####
 
