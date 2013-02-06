@@ -9,7 +9,7 @@ HorVanishPoint::HorVanishPoint(const IplImage* src, CvRect rect) {
 
 	imgCenter = cvPoint(src->width/2, src->height/2);
 
-	radiusStep = 0.5 * sqrt(pow(rect.width, 2) + pow(rect.height, 2));
+	radiusStep = 0.5 * sqrt(pow((double)rect.width, 2) + pow((double)rect.height, 2));
 	radiusRatio = SEARCH_MIN;
 
 	radius = radiusRatio * radiusStep;
