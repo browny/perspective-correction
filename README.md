@@ -33,7 +33,7 @@
 	$ cd bin
 	$ ./main test.jpg
 
-	1.Locate the 4 red corners to the boundary of document. 
+	1. Locate the 4 red corners to the boundary of document. 
 	2. Press 'H' to convert.
 
 ####6. Exit####
